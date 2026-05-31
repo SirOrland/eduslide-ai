@@ -1,9 +1,9 @@
 import OpenAI from "openai";
 import type { GenerateOptions, PresentationData } from "@/types";
 
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAI() {
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
 
 export async function generatePresentation(
   documentText: string,
@@ -57,7 +57,7 @@ Respond ONLY with a JSON object matching this exact schema:
   ]
 }`;
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt },
@@ -88,7 +88,7 @@ export async function regenerateSlide(
   slideType: string,
   instructions?: string
 ): Promise<{ title: string; content: string[]; speakerNotes: string; imagePrompt: string }> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: "gpt-4o",
     messages: [
       {
