@@ -9,11 +9,6 @@ import {
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import type { Session } from "next-auth";
-
-interface SidebarProps {
-  user: Session["user"];
-}
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -21,7 +16,7 @@ const navItems = [
   { href: "/profile", icon: User, label: "Profile" },
 ];
 
-export function DashboardSidebar({ user }: SidebarProps) {
+export function DashboardSidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 

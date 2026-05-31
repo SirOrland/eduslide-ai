@@ -1,5 +1,5 @@
 import PptxGenJS from "pptxgenjs";
-import type { PresentationWithSlides, ColorScheme, COLOR_SCHEMES } from "@/types";
+import type { PresentationWithSlides, ColorScheme } from "@/types";
 import { COLOR_SCHEMES as colorSchemesData } from "@/types";
 
 function getColorScheme(schemeId: string): ColorScheme {

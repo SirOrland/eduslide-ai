@@ -18,8 +18,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative z-10">
           <blockquote className="text-xl text-white font-light leading-relaxed mb-6">
-            "EduSlide AI saved me 3 hours of work every week. I upload my lesson plan and get
-            beautiful slides in seconds."
+            &ldquo;EduSlide AI saved me 3 hours of work every week. I upload my lesson plan and get
+            beautiful slides in seconds.&rdquo;
           </blockquote>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
