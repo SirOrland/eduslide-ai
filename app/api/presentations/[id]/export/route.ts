@@ -31,10 +31,13 @@ export async function GET(
 
     const safeTitle = presentation.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
 
-    return new NextResponse(pptxBuffer, {
+    const blob = new Blob([pptxBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    });
+
+    return new NextResponse(blob, {
       status: 200,
       headers: {
-        "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         "Content-Disposition": `attachment; filename="${safeTitle}.pptx"`,
         "Content-Length": pptxBuffer.length.toString(),
       },
