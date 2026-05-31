@@ -9,7 +9,7 @@ function getColorScheme(schemeId: string): ColorScheme {
 export async function generatePptx(
   presentation: PresentationWithSlides,
   colorSchemeId: string = "blue"
-): Promise<Buffer> {
+): Promise<Blob> {
   const pptx = new PptxGenJS();
   const scheme = getColorScheme(colorSchemeId);
 
@@ -182,6 +182,5 @@ export async function generatePptx(
     }
   }
 
-  const arrayBuffer = await pptx.write({ outputType: "arraybuffer" });
-  return Buffer.from(arrayBuffer as ArrayBuffer);
+  return (await pptx.write({ outputType: "blob" })) as unknown as Blob;
 }

@@ -24,22 +24,18 @@ export async function GET(
       return NextResponse.json({ error: "Presentation not found" }, { status: 404 });
     }
 
-    const pptxBuffer = await generatePptx(
+    const blob = await generatePptx(
       presentation as Parameters<typeof generatePptx>[0],
       presentation.colorScheme
     );
 
     const safeTitle = presentation.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
 
-    const blob = new Blob([pptxBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    });
-
     return new NextResponse(blob, {
       status: 200,
       headers: {
         "Content-Disposition": `attachment; filename="${safeTitle}.pptx"`,
-        "Content-Length": pptxBuffer.length.toString(),
+        "Content-Length": blob.size.toString(),
       },
     });
   } catch (error) {
