@@ -2,8 +2,13 @@ import OpenAI from "openai";
 import type { GenerateOptions, PresentationData } from "@/types";
 
 function getOpenAI() {
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return new OpenAI({
+    apiKey: process.env.GROQ_API_KEY,
+    baseURL: "https://api.groq.com/openai/v1",
+  });
 }
+
+const MODEL = "llama-3.3-70b-versatile";
 
 export async function generatePresentation(
   documentText: string,
@@ -58,7 +63,7 @@ Respond ONLY with a JSON object matching this exact schema:
 }`;
 
   const response = await getOpenAI().chat.completions.create({
-    model: "gpt-4o",
+    model: MODEL,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
@@ -89,7 +94,7 @@ export async function regenerateSlide(
   instructions?: string
 ): Promise<{ title: string; content: string[]; speakerNotes: string; imagePrompt: string }> {
   const response = await getOpenAI().chat.completions.create({
-    model: "gpt-4o",
+    model: MODEL,
     messages: [
       {
         role: "system",
