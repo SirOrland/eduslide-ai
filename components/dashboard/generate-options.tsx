@@ -2,12 +2,12 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Wand2, Sparkles } from "lucide-react";
+import { Loader2, Wand2, Sparkles, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PRESENTATION_THEMES, COLOR_SCHEMES, FONT_STYLES, ANIMATION_STYLES } from "@/types";
+import { PRESENTATION_THEMES, COLOR_SCHEMES, FONT_STYLES, ANIMATION_STYLES, IMAGE_STYLES } from "@/types";
 
 const optionsSchema = z.object({
   numSlides: z.coerce.number().min(3).max(30),
@@ -23,6 +23,8 @@ const optionsSchema = z.object({
   presentationStyle: z.enum(["educational", "business", "marketing", "conference"]),
   transitionStyle: z.string(),
   animationSpeed: z.enum(["slow", "normal", "fast"]),
+  imageMode: z.enum(["auto", "search", "generate", "none"]),
+  imageStyle: z.enum(["realistic", "infographic", "educational", "minimalist"]),
 });
 
 type OptionsFormData = z.infer<typeof optionsSchema>;
@@ -65,6 +67,8 @@ export function GenerateOptions({ onGenerate, isGenerating, fileInfo }: Generate
       presentationStyle: "educational",
       transitionStyle: "automatic",
       animationSpeed: "normal",
+      imageMode: "auto",
+      imageStyle: "educational",
     },
   });
 
@@ -255,6 +259,61 @@ export function GenerateOptions({ onGenerate, isGenerating, fileInfo }: Generate
             </Select>
           </div>
         </div>
+      </div>
+
+      {/* Image Engine */}
+      <div className="space-y-3">
+        <Label className="text-sm font-semibold flex items-center gap-1.5">
+          <ImageIcon className="w-3.5 h-3.5 text-primary" />
+          Smart Image Assistant
+        </Label>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Image Mode</Label>
+          <div className="grid grid-cols-2 gap-1.5">
+            {([
+              { id: "auto",     label: "Auto",          desc: "Search first, generate if needed" },
+              { id: "search",   label: "Search Only",   desc: "Openverse CC-licensed photos" },
+              { id: "generate", label: "AI Generate",   desc: "Pollinations.ai illustrations" },
+              { id: "none",     label: "No Images",     desc: "Text-only slides" },
+            ] as const).map((m) => (
+              <label
+                key={m.id}
+                className={`flex flex-col p-2.5 rounded-lg border cursor-pointer transition-all ${
+                  watchedValues.imageMode === m.id
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <input type="radio" value={m.id} {...register("imageMode")} className="sr-only" />
+                <span className="font-medium text-xs">{m.label}</span>
+                <span className="text-xs text-muted-foreground leading-tight">{m.desc}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {watchedValues.imageMode !== "none" && (
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Image Style</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {IMAGE_STYLES.map((s) => (
+                <label
+                  key={s.id}
+                  className={`flex flex-col p-2.5 rounded-lg border cursor-pointer transition-all ${
+                    watchedValues.imageStyle === s.id
+                      ? "border-primary bg-primary/5 ring-1 ring-primary"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <input type="radio" value={s.id} {...register("imageStyle")} className="sr-only" />
+                  <span className="font-medium text-xs">{s.name}</span>
+                  <span className="text-xs text-muted-foreground leading-tight">{s.description}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* AI Extras */}

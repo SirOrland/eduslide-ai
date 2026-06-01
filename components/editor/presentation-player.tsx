@@ -248,6 +248,18 @@ export function PresentationPlayer({ presentation, onClose }: PresentationPlayer
   );
 }
 
+function SlideImage({ url, alt, className }: { url: string; alt: string; className?: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={url}
+      alt={alt}
+      className={cn("object-cover", className)}
+      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+    />
+  );
+}
+
 function TitleSlide({ slide, colors, getElemAnim, level, totalSlides }: {
   slide: SlideRecord;
   colors: typeof SCHEME_COLORS.blue;
@@ -255,14 +267,23 @@ function TitleSlide({ slide, colors, getElemAnim, level, totalSlides }: {
   level: string;
   totalSlides: number;
 }) {
+  const hasImage = Boolean(slide.imageUrl);
   return (
     <div
       className="w-full aspect-video rounded-2xl overflow-hidden flex flex-col relative shadow-2xl"
       style={{ backgroundColor: colors.bg }}
     >
-      <div className="h-2" style={{ background: `linear-gradient(90deg, ${colors.header}, ${colors.accent})` }} />
+      {/* Background image overlay for title slides */}
+      {hasImage && (
+        <div className="absolute inset-0 z-0">
+          <SlideImage url={slide.imageUrl!} alt={slide.title} className="w-full h-full opacity-20" />
+          <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, transparent, ${colors.bg}cc)` }} />
+        </div>
+      )}
 
-      <div className="flex-1 flex flex-col items-center justify-center px-16 text-center gap-5">
+      <div className="h-2 relative z-10" style={{ background: `linear-gradient(90deg, ${colors.header}, ${colors.accent})` }} />
+
+      <div className="flex-1 flex flex-col items-center justify-center px-16 text-center gap-5 relative z-10">
         {level !== "none" && (
           <motion.div
             className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl"
@@ -292,13 +313,13 @@ function TitleSlide({ slide, colors, getElemAnim, level, totalSlides }: {
         )}
       </div>
 
-      <div className="flex items-center justify-between px-8 py-2.5 border-t border-black/5 text-xs opacity-40"
+      <div className="flex items-center justify-between px-8 py-2.5 border-t border-black/5 text-xs opacity-40 relative z-10"
            style={{ color: colors.text }}>
         <span>EduSlide AI</span>
         <span>{slide.slideNumber} / {totalSlides}</span>
       </div>
 
-      <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${colors.header}, ${colors.accent})` }} />
+      <div className="h-1.5 relative z-10" style={{ background: `linear-gradient(90deg, ${colors.header}, ${colors.accent})` }} />
     </div>
   );
 }
@@ -314,6 +335,8 @@ function ContentSlide({ slide, colors, getElemAnim, level, speed, revealed, stor
   totalSlides: number;
 }) {
   const bulletDur = speed === "slow" ? 0.65 : speed === "fast" ? 0.22 : 0.42;
+  const hasImage  = Boolean(slide.imageUrl);
+  const maxBullets = hasImage ? 4 : 6;
 
   return (
     <div
@@ -325,66 +348,73 @@ function ContentSlide({ slide, colors, getElemAnim, level, speed, revealed, stor
         style={{ background: `linear-gradient(135deg, ${colors.header}f0, ${colors.header}cc)` }}
         {...getElemAnim("header", "slideInLeft", 0)}
       >
-        <span className="text-white/55 text-xs uppercase tracking-widest font-medium">
-          {slide.slideType}
-        </span>
-        <h2 className="text-white font-bold text-3xl leading-tight mt-0.5 line-clamp-2">
-          {slide.title}
-        </h2>
+        <span className="text-white/55 text-xs uppercase tracking-widest font-medium">{slide.slideType}</span>
+        <h2 className="text-white font-bold text-3xl leading-tight mt-0.5 line-clamp-2">{slide.title}</h2>
       </motion.div>
 
-      <div
-        className="absolute left-0 top-[86px] bottom-10 w-1.5 rounded-r-full"
-        style={{ backgroundColor: colors.accent }}
-      />
+      <div className="absolute left-0 top-[86px] bottom-10 w-1.5 rounded-r-full" style={{ backgroundColor: colors.accent }} />
 
-      <div className="flex-1 px-14 py-5 overflow-hidden">
-        <ul className="space-y-3.5">
-          {slide.content.slice(0, 6).map((item, i) => {
-            const visible = !storytelling || i < revealed;
-            return (
-              <AnimatePresence key={i}>
-                {visible && (
-                  <motion.li
-                    className="flex items-start gap-3"
-                    initial={{ opacity: 0, x: -25 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{
-                      duration: bulletDur,
-                      delay: storytelling ? 0 : (level !== "none" ? i * 0.13 : 0),
-                      ease: "easeOut",
-                    }}
-                  >
-                    <div
-                      className="w-2 h-2 rounded-full mt-2.5 flex-shrink-0"
-                      style={{ backgroundColor: colors.accent }}
-                    />
-                    <span className="text-lg leading-snug" style={{ color: colors.text }}>
-                      {item}
-                    </span>
-                  </motion.li>
-                )}
-              </AnimatePresence>
-            );
-          })}
-        </ul>
+      {/* Body: bullets + optional image */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Bullets */}
+        <div className={cn("py-5 overflow-hidden", hasImage ? "w-[56%] pl-14 pr-4" : "flex-1 px-14")}>
+          <ul className="space-y-3">
+            {slide.content.slice(0, maxBullets).map((item, i) => {
+              const visible = !storytelling || i < revealed;
+              return (
+                <AnimatePresence key={i}>
+                  {visible && (
+                    <motion.li
+                      className="flex items-start gap-3"
+                      initial={{ opacity: 0, x: -25 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        duration: bulletDur,
+                        delay: storytelling ? 0 : (level !== "none" ? i * 0.13 : 0),
+                        ease: "easeOut",
+                      }}
+                    >
+                      <div className="w-2 h-2 rounded-full mt-2.5 flex-shrink-0" style={{ backgroundColor: colors.accent }} />
+                      <span className="text-lg leading-snug" style={{ color: colors.text }}>{item}</span>
+                    </motion.li>
+                  )}
+                </AnimatePresence>
+              );
+            })}
+          </ul>
 
-        {storytelling && revealed < slide.content.length && (
-          <motion.p
-            className="text-sm opacity-35 mt-5 text-center"
-            style={{ color: colors.text }}
-            animate={{ opacity: [0.25, 0.55, 0.25] }}
-            transition={{ duration: 1.6, repeat: Infinity }}
+          {storytelling && revealed < slide.content.length && (
+            <motion.p
+              className="text-sm opacity-35 mt-4 text-center"
+              style={{ color: colors.text }}
+              animate={{ opacity: [0.25, 0.55, 0.25] }}
+              transition={{ duration: 1.6, repeat: Infinity }}
+            >
+              Press Space or → for next point
+            </motion.p>
+          )}
+        </div>
+
+        {/* Image panel */}
+        {hasImage && (
+          <motion.div
+            className="w-[44%] p-3 flex flex-col gap-1.5"
+            {...getElemAnim("image", "fadeIn", level !== "none" ? 0.4 : 0)}
           >
-            Press Space or → for next point
-          </motion.p>
+            <div className="flex-1 rounded-xl overflow-hidden shadow-md border border-white/20">
+              <SlideImage url={slide.imageUrl!} alt={slide.title} className="w-full h-full" />
+            </div>
+            {slide.imagePrompt && (
+              <p className="text-xs opacity-40 line-clamp-1 text-center" style={{ color: colors.text }}>
+                {slide.imagePrompt.split(",")[0]}
+              </p>
+            )}
+          </motion.div>
         )}
       </div>
 
-      <div
-        className="flex items-center justify-between px-8 py-2.5 border-t text-xs opacity-35"
-        style={{ color: colors.text, borderColor: `${colors.text}20` }}
-      >
+      <div className="flex items-center justify-between px-8 py-2.5 border-t text-xs opacity-35"
+           style={{ color: colors.text, borderColor: `${colors.text}20` }}>
         <span>EduSlide AI</span>
         <span>{slide.slideNumber} / {totalSlides}</span>
       </div>

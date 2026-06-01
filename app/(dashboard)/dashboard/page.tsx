@@ -50,15 +50,19 @@ export default function DashboardPage() {
     presentationStyle?: string;
     transitionStyle?: string;
     animationSpeed?: string;
+    imageMode?: string;
+    imageStyle?: string;
   }) => {
     if (!uploadData) return;
 
-    const { animationLevel, presentationStyle, transitionStyle, animationSpeed, ...rest } = options;
+    const { animationLevel, presentationStyle, transitionStyle, animationSpeed, imageMode, imageStyle, ...rest } = options;
     const animationConfig = {
       animationLevel: animationLevel || "medium",
       presentationStyle: presentationStyle || "educational",
       transitionStyle: transitionStyle || "automatic",
       animationSpeed: animationSpeed || "normal",
+      imageMode: imageMode || "auto",
+      imageStyle: imageStyle || "educational",
     };
 
     setIsGenerating(true);

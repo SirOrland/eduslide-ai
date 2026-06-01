@@ -173,6 +173,23 @@ export const PRESENTATION_THEMES = [
   { id: "corporate", name: "Corporate", description: "Formal enterprise style" },
 ];
 
+// Image types
+export type ImageMode = "auto" | "search" | "generate" | "none";
+export type ImageStyle = "realistic" | "infographic" | "educational" | "minimalist";
+
+export interface ImageConfig {
+  imageMode: ImageMode;
+  imageStyle: ImageStyle;
+  includeDiagrams: boolean;
+}
+
+export const IMAGE_STYLES = [
+  { id: "educational", name: "Educational", description: "Diagrams & labeled illustrations" },
+  { id: "realistic",   name: "Realistic",   description: "Photography & real-world images" },
+  { id: "infographic", name: "Infographic", description: "Charts, icons & flat design" },
+  { id: "minimalist",  name: "Minimalist",  description: "Clean, simple vector graphics" },
+];
+
 export const ANIMATION_STYLES = [
   { id: "educational", name: "Educational", description: "Slow, focused, sequential reveals" },
   { id: "business", name: "Business", description: "Professional, minimal animations" },

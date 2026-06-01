@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft, FileDown, Loader2, ChevronLeft, ChevronRight, Presentation, Play,
+  ArrowLeft, FileDown, Loader2, ChevronLeft, ChevronRight, Presentation, Play, ImageIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { SlideList } from "@/components/editor/slide-list";
@@ -29,6 +29,7 @@ export default function PresentationEditorPage({
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloadingHtml, setIsDownloadingHtml] = useState(false);
+  const [isGeneratingImages, setIsGeneratingImages] = useState(false);
 
   useEffect(() => {
     fetch(`/api/presentations/${id}`)
@@ -65,6 +66,29 @@ export default function PresentationEditorPage({
       toast({ title: "Download failed", description: "Please try again.", variant: "destructive" });
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const handleGenerateImages = async () => {
+    setIsGeneratingImages(true);
+    try {
+      const cfg = (presentation?.animationConfig as any) ?? {};
+      const res = await fetch(`/api/presentations/${id}/generate-images`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageMode:  cfg.imageMode  ?? "auto",
+          imageStyle: cfg.imageStyle ?? "educational",
+        }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setPresentation(data.presentation);
+      toast({ title: "Images generated!", description: "Slides updated with contextual images." });
+    } catch {
+      toast({ title: "Image generation failed", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setIsGeneratingImages(false);
     }
   };
 
@@ -145,6 +169,18 @@ export default function PresentationEditorPage({
               <Play className="w-3.5 h-3.5 mr-1.5" />
               Present
             </Link>
+          </Button>
+          <Button
+            onClick={handleGenerateImages}
+            disabled={isGeneratingImages}
+            variant="outline"
+            size="sm"
+          >
+            {isGeneratingImages ? (
+              <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Generating...</>
+            ) : (
+              <><ImageIcon className="w-3.5 h-3.5 mr-1.5" />Images</>
+            )}
           </Button>
           <Button
             onClick={handleDownloadHtml}
