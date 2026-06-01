@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         fontStyle: options.fontStyle,
         status: "ready",
         slideCount: presentationData.slides.length,
-        animationConfig: options.animationConfig ?? null,
+        animationConfig: options.animationConfig ?? undefined,
         slides: {
           create: presentationData.slides.map((slide) => ({
             slideNumber: slide.slideNumber,
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
             content: slide.content,
             speakerNotes: slide.speakerNotes,
             imagePrompt: slide.imagePrompt,
-            animationData: (slide.animationData as any) ?? null,
+            animationData: (slide.animationData as any) ?? undefined,
           })),
         },
       },
