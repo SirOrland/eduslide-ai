@@ -16,6 +16,51 @@ export type PresentationTheme =
 
 export type PresentationStatus = "draft" | "generating" | "ready" | "error";
 
+// Animation types
+export type AnimationEffect =
+  | "fadeIn"
+  | "slideInLeft"
+  | "slideInRight"
+  | "slideInUp"
+  | "zoomIn"
+  | "bounceIn"
+  | "typewriter";
+
+export type TransitionType =
+  | "fade"
+  | "morph"
+  | "zoom"
+  | "push"
+  | "reveal"
+  | "wipe"
+  | "none";
+
+export type CameraEffect = "none" | "pan" | "zoom" | "focus";
+export type AnimationLevel = "none" | "low" | "medium" | "high";
+export type PresentationStyleMode = "educational" | "business" | "marketing" | "conference";
+export type AnimationSpeed = "slow" | "normal" | "fast";
+
+export interface ElementAnimation {
+  element: string;
+  effect: AnimationEffect;
+  duration: number;
+  delay?: number;
+}
+
+export interface SlideAnimationData {
+  transition: TransitionType;
+  transitionDuration?: number;
+  cameraEffect?: CameraEffect;
+  animationSequence: ElementAnimation[];
+}
+
+export interface AnimationConfig {
+  animationLevel: AnimationLevel;
+  presentationStyle: PresentationStyleMode;
+  transitionStyle: "automatic" | TransitionType;
+  animationSpeed: AnimationSpeed;
+}
+
 export interface SlideData {
   slideNumber: number;
   slideType: SlideType;
@@ -24,6 +69,7 @@ export interface SlideData {
   speakerNotes: string;
   imagePrompt: string;
   imageUrl?: string;
+  animationData?: SlideAnimationData;
 }
 
 export interface PresentationData {
@@ -43,6 +89,7 @@ export interface GenerateOptions {
   includeSummary: boolean;
   includeReferences: boolean;
   language: string;
+  animationConfig?: AnimationConfig;
 }
 
 export interface UploadedFile {
@@ -67,6 +114,7 @@ export interface PresentationWithSlides {
   fontStyle: string;
   status: string;
   slideCount: number;
+  animationConfig?: AnimationConfig | null;
   createdAt: Date;
   updatedAt: Date;
   slides: SlideRecord[];
@@ -82,6 +130,7 @@ export interface SlideRecord {
   speakerNotes: string | null;
   imagePrompt: string | null;
   imageUrl: string | null;
+  animationData?: SlideAnimationData | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -122,4 +171,11 @@ export const PRESENTATION_THEMES = [
   { id: "professional", name: "Professional", description: "Corporate and business presentations" },
   { id: "minimal", name: "Minimal", description: "Clean and distraction-free slides" },
   { id: "corporate", name: "Corporate", description: "Formal enterprise style" },
+];
+
+export const ANIMATION_STYLES = [
+  { id: "educational", name: "Educational", description: "Slow, focused, sequential reveals" },
+  { id: "business", name: "Business", description: "Professional, minimal animations" },
+  { id: "marketing", name: "Marketing", description: "Dynamic, high-energy effects" },
+  { id: "conference", name: "Conference", description: "Premium storytelling animations" },
 ];

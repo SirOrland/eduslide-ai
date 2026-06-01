@@ -1,4 +1,4 @@
-﻿export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { generatePresentation } from "@/lib/openai";
@@ -18,6 +18,12 @@ const generateSchema = z.object({
   includeSummary: z.boolean().default(true),
   includeReferences: z.boolean().default(false),
   language: z.string().default("English"),
+  animationConfig: z.object({
+    animationLevel: z.enum(["none", "low", "medium", "high"]).default("medium"),
+    presentationStyle: z.enum(["educational", "business", "marketing", "conference"]).default("educational"),
+    transitionStyle: z.string().default("automatic"),
+    animationSpeed: z.enum(["slow", "normal", "fast"]).default("normal"),
+  }).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -39,7 +45,6 @@ export async function POST(request: NextRequest) {
 
     const options = parsed.data;
 
-    // Generate with AI
     const presentationData = await generatePresentation(options.documentText, {
       numSlides: options.numSlides,
       theme: options.theme,
@@ -50,9 +55,9 @@ export async function POST(request: NextRequest) {
       includeSummary: options.includeSummary,
       includeReferences: options.includeReferences,
       language: options.language,
+      animationConfig: options.animationConfig as any,
     });
 
-    // Save to database
     const presentation = await prisma.presentation.create({
       data: {
         userId: session.user.id,
@@ -65,6 +70,7 @@ export async function POST(request: NextRequest) {
         fontStyle: options.fontStyle,
         status: "ready",
         slideCount: presentationData.slides.length,
+        animationConfig: options.animationConfig ?? null,
         slides: {
           create: presentationData.slides.map((slide) => ({
             slideNumber: slide.slideNumber,
@@ -73,6 +79,7 @@ export async function POST(request: NextRequest) {
             content: slide.content,
             speakerNotes: slide.speakerNotes,
             imagePrompt: slide.imagePrompt,
+            animationData: (slide.animationData as any) ?? null,
           })),
         },
       },
@@ -86,4 +93,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

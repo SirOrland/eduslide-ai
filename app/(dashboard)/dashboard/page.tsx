@@ -46,8 +46,20 @@ export default function DashboardPage() {
     includeSummary: boolean;
     includeReferences: boolean;
     language: string;
+    animationLevel?: string;
+    presentationStyle?: string;
+    transitionStyle?: string;
+    animationSpeed?: string;
   }) => {
     if (!uploadData) return;
+
+    const { animationLevel, presentationStyle, transitionStyle, animationSpeed, ...rest } = options;
+    const animationConfig = {
+      animationLevel: animationLevel || "medium",
+      presentationStyle: presentationStyle || "educational",
+      transitionStyle: transitionStyle || "automatic",
+      animationSpeed: animationSpeed || "normal",
+    };
 
     setIsGenerating(true);
     try {
@@ -58,7 +70,8 @@ export default function DashboardPage() {
           documentText: uploadData.extractedText,
           fileName: uploadData.fileName,
           originalFileUrl: uploadData.fileUrl,
-          ...options,
+          ...rest,
+          animationConfig,
         }),
       });
 

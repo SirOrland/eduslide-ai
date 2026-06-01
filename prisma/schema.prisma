@@ -79,6 +79,7 @@ model Presentation {
   fontStyle       String   @default("modern")
   status          String   @default("draft")
   slideCount      Int      @default(0)
+  animationConfig Json?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -98,6 +99,7 @@ model Slide {
   speakerNotes   String?  @db.Text
   imagePrompt    String?
   imageUrl       String?
+  animationData  Json?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

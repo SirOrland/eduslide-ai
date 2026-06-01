@@ -2,12 +2,12 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PRESENTATION_THEMES, COLOR_SCHEMES, FONT_STYLES } from "@/types";
+import { PRESENTATION_THEMES, COLOR_SCHEMES, FONT_STYLES, ANIMATION_STYLES } from "@/types";
 
 const optionsSchema = z.object({
   numSlides: z.coerce.number().min(3).max(30),
@@ -19,6 +19,10 @@ const optionsSchema = z.object({
   includeSummary: z.boolean(),
   includeReferences: z.boolean(),
   language: z.string(),
+  animationLevel: z.enum(["none", "low", "medium", "high"]),
+  presentationStyle: z.enum(["educational", "business", "marketing", "conference"]),
+  transitionStyle: z.string(),
+  animationSpeed: z.enum(["slow", "normal", "fast"]),
 });
 
 type OptionsFormData = z.infer<typeof optionsSchema>;
@@ -34,6 +38,16 @@ const LANGUAGES = [
   "Italian", "Chinese", "Japanese", "Arabic", "Hindi",
 ];
 
+const TRANSITIONS = [
+  { id: "automatic", name: "Auto (AI Picks)" },
+  { id: "fade", name: "Fade" },
+  { id: "morph", name: "Morph" },
+  { id: "zoom", name: "Zoom" },
+  { id: "push", name: "Push" },
+  { id: "reveal", name: "Reveal" },
+  { id: "wipe", name: "Wipe" },
+];
+
 export function GenerateOptions({ onGenerate, isGenerating, fileInfo }: GenerateOptionsProps) {
   const { register, handleSubmit, watch, setValue } = useForm<OptionsFormData>({
     resolver: zodResolver(optionsSchema),
@@ -47,13 +61,21 @@ export function GenerateOptions({ onGenerate, isGenerating, fileInfo }: Generate
       includeSummary: true,
       includeReferences: false,
       language: "English",
+      animationLevel: "medium",
+      presentationStyle: "educational",
+      transitionStyle: "automatic",
+      animationSpeed: "normal",
     },
   });
 
   const watchedValues = watch();
 
+  const handleFormSubmit = (data: OptionsFormData) => {
+    onGenerate(data);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onGenerate)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       {fileInfo && (
         <div className="bg-muted/50 rounded-lg p-4 text-sm flex gap-4">
           <div>
@@ -154,6 +176,85 @@ export function GenerateOptions({ onGenerate, isGenerating, fileInfo }: Generate
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Animation Engine */}
+      <div className="space-y-3">
+        <Label className="text-sm font-semibold flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          AI Animation Engine
+        </Label>
+
+        {/* Animation Style */}
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Presentation Style</Label>
+          <div className="grid grid-cols-2 gap-1.5">
+            {ANIMATION_STYLES.map((style) => (
+              <label
+                key={style.id}
+                className={`flex flex-col p-2.5 rounded-lg border cursor-pointer transition-all ${
+                  watchedValues.presentationStyle === style.id
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <input type="radio" value={style.id} {...register("presentationStyle")} className="sr-only" />
+                <span className="font-medium text-xs">{style.name}</span>
+                <span className="text-xs text-muted-foreground leading-tight">{style.description}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Animation Level */}
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Animation Level</Label>
+          <div className="grid grid-cols-4 gap-1.5">
+            {(["none", "low", "medium", "high"] as const).map((level) => (
+              <label
+                key={level}
+                className={`text-center p-2 rounded-lg border cursor-pointer transition-all text-xs font-medium capitalize ${
+                  watchedValues.animationLevel === level
+                    ? "border-primary bg-primary/5 ring-1 ring-primary text-primary"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <input type="radio" value={level} {...register("animationLevel")} className="sr-only" />
+                {level}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Transition & Speed */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Transition</Label>
+            <Select value={watchedValues.transitionStyle} onValueChange={(v) => setValue("transitionStyle", v)}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TRANSITIONS.map((t) => (
+                  <SelectItem key={t.id} value={t.id} className="text-xs">{t.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Speed</Label>
+            <Select value={watchedValues.animationSpeed} onValueChange={(v) => setValue("animationSpeed", v as any)}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="slow" className="text-xs">Slow</SelectItem>
+                <SelectItem value="normal" className="text-xs">Normal</SelectItem>
+                <SelectItem value="fast" className="text-xs">Fast</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {/* AI Extras */}

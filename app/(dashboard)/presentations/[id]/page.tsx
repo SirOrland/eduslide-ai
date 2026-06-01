@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft, FileDown, Loader2, ChevronLeft, ChevronRight, Presentation,
+  ArrowLeft, FileDown, Loader2, ChevronLeft, ChevronRight, Presentation, Play,
 } from "lucide-react";
 import Link from "next/link";
 import { SlideList } from "@/components/editor/slide-list";
@@ -28,6 +28,7 @@ export default function PresentationEditorPage({
   const [isLoading, setIsLoading] = useState(true);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingHtml, setIsDownloadingHtml] = useState(false);
 
   useEffect(() => {
     fetch(`/api/presentations/${id}`)
@@ -64,6 +65,26 @@ export default function PresentationEditorPage({
       toast({ title: "Download failed", description: "Please try again.", variant: "destructive" });
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const handleDownloadHtml = async () => {
+    setIsDownloadingHtml(true);
+    try {
+      const res = await fetch(`/api/presentations/${id}/export/html`);
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${presentation?.title?.replace(/[^a-z0-9]/gi, "_") || "presentation"}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: "HTML exported!", description: "Open the file in any browser to present." });
+    } catch {
+      toast({ title: "Export failed", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setIsDownloadingHtml(false);
     }
   };
 
@@ -118,18 +139,38 @@ export default function PresentationEditorPage({
           </div>
         </div>
 
-        <Button
-          onClick={handleDownload}
-          disabled={isDownloading}
-          variant="gradient"
-          size="sm"
-        >
-          {isDownloading ? (
-            <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Generating...</>
-          ) : (
-            <><FileDown className="w-3.5 h-3.5 mr-1.5" />Download PPTX</>
-          )}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/presentations/${id}/present`}>
+              <Play className="w-3.5 h-3.5 mr-1.5" />
+              Present
+            </Link>
+          </Button>
+          <Button
+            onClick={handleDownloadHtml}
+            disabled={isDownloadingHtml}
+            variant="outline"
+            size="sm"
+          >
+            {isDownloadingHtml ? (
+              <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Exporting...</>
+            ) : (
+              <><FileDown className="w-3.5 h-3.5 mr-1.5" />HTML</>
+            )}
+          </Button>
+          <Button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            variant="gradient"
+            size="sm"
+          >
+            {isDownloading ? (
+              <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Generating...</>
+            ) : (
+              <><FileDown className="w-3.5 h-3.5 mr-1.5" />PPTX</>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Editor content */}
